@@ -1,4 +1,4 @@
-const { data } = require("./data/movie_link");
+const { data } = require("./data/hollywood");
 
 const TelegramBot = require("node-telegram-bot-api");
 
@@ -19,8 +19,8 @@ bot.on("message", (msg) => {
       const keyboard = {
         inline_keyboard: items.map((option) => [
           {
-            text: `${option.name} - [${option.year}] - [${option.resolution}] - [${option.size}]`,
-            callback_data: option.id,
+            text: `${option.name}`,
+            callback_data: option.count,
           },
         ]),
       };
@@ -38,17 +38,22 @@ bot.on("message", (msg) => {
 
 bot.on("callback_query", async (query) => {
   const chatId = query.message.chat.id;
-  const option = data.find((obj) => obj.id == query.data);
+  const option = data.find((obj) => obj.count == query.data);
   try {
     const b = "https://image.tmdb.org/t/p/w300/kuf6dutpsT0vSVehic3EZIqkOBt.jpg";
     const s =
       "https://res.cloudinary.com/shivraj-technology/video/upload/v1658042880/bvypefdlx6smjiwemqwb.mp4";
     const opts = {
+      thumb:b,
       supports_streaming: true,
     };
     const encodedVideoUrl = encodeURI(option.href);
     await bot.sendVideo(chatId, encodedVideoUrl, opts);
-    /* code */
+   
+    if(option?.href_two){
+    const encodedVideoUrl_two = encodeURI(option.href_two);
+    await bot.sendVideo(chatId, encodedVideoUrl, opts);
+    }
   } catch (e) {
     bot.sendMessage(
       chatId,
@@ -59,5 +64,16 @@ bot.on("callback_query", async (query) => {
         parse_mode: "HTML",
       }
     );
+    if(option?.href_two){
+      bot.sendMessage(
+      chatId,
+      "Download part 2: <a href='" +
+        option.href_two +
+        "'>Download or watch in web browser</a>",
+      {
+        parse_mode: "HTML",
+      }
+    );
+    }
   }
 });
